@@ -4,7 +4,7 @@
   "description": "Bodega de Fuentes de datos",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js",
+    "dev": "nodemon -e ini, js, msj, json index.js",
     "prod": "node index.js"
   },
   "author": "",
@@ -17,6 +17,10 @@
     "moment": "^2.29.4",
     "multer": "^1.4.5-lts.1",
     "mysql": "^2.18.1",
+    "properties-reader": "^2.3.0",
     "util": "^0.12.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
 }
