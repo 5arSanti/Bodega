@@ -8,7 +8,8 @@ let storage = multer.diskStorage({
         callback(null, "./uploads/");
     },
     filename:(request, file, callback) => {
-		const selectedOption = request.get('selectedOption');
+		const { selectedOption } = request.body;
+
 		const fileDate = moment().format("YYYY-MM-DD_HH-mm-ss");
 		let formatName = file.fieldname + "-" + selectedOption + "_" + fileDate + path.extname(file.originalname);
 

@@ -13,13 +13,17 @@ app.use(express.json());
 
 // Cors Configuration
 const whiteList = [
-	//DEV
-	"http://localhost:3000",
+	// LOCAL
 	"http://localhost:5173",
     "http://127.0.0.1:5173",
 
-	//PROD
+	// DEV
 	"http://10.140.0.16:15203",
+
+	// PRUEBAS
+	"https://ambientesdepruebas.serviciodeempleo.gov.co/qaconsolidaarchivos"
+
+	// PROD
 ];
 const options = {
     origin: (origin, callback) => {
@@ -33,12 +37,6 @@ const options = {
 app.use(cors(options));
 
 routerApi(app);
-
-app.get("/", (request, response) => {
-	return response.send("Hola servidor backend para Bodega");
-})
-
-
 
 app.listen(port, (request, response) => {
     console.log("Esuchando en el puerto: " + port);

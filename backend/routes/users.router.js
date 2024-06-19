@@ -1,7 +1,22 @@
 const express = require("express");
-const { connection } = require("../database")
+const { connection } = require("../database");
+const { getQuery } = require("../utils/querys");
 
 const router = express.Router();
+
+router.get("/", async (request, response) => {
+	try {
+		const users = await getQuery("SELECT nombre, correo, tipo FROM login");
+
+        return response.status(200).json({users});
+
+    }
+	catch (err) {
+        return response.status(500).json({
+            message: err.message || "Internal Server Error",
+        });
+    }
+})
 
 router.post('/', (request, response) => {
 	try {
@@ -9,67 +24,56 @@ router.post('/', (request, response) => {
 
 		connection.query('INSERT INTO login SET ?', newUserData, (err, results) => {
 			if (err) {
-				console.error(err);
-				return response.status(500).json({ message: 'Error al crear el usuario' });
+				return response.json({ Error: err.message });
 			}
 
-			const newUser = { id: results.insertId, ...newUserData };
-			return response.status(201).json({message: "Usuario creado Correctamente", newUser: newUser});
+			return response.json({Status: "Success", message: "Usuario creado correctamente"});
 	  });
 	} catch (err) {
-		console.error(error);
-		return response.status(500).json({ message: 'Error al crear el usuario' });
+		return response.json({ Error: 'Error al crear el usuario' });
 	}
 });
 
-router.put('/:userId', (request, response) => {
-	const userId = request.params.userId;
-	const {nombre, correo, tipo} = request.body;
-
+router.put('/', (request, response) => {
 	try {
-		// Encuentra y actualiza el usuario en la base de datos
+		const { id, nombre, correo, tipo } = request.body;
+
 		connection.query('UPDATE login SET nombre = ?, correo = ?, tipo = ? WHERE id = ?',
-			[nombre, correo, tipo, userId],
+			[nombre, correo, tipo, id],
 			(err, results) => {
 				if (err) {
-					return res.status(500).json({ error: 'Error al actualizar el usuario' });
+					return res.status(500).json({ Error: 'Error al actualizar el usuario' });
 				}
 
 				if (results.affectedRows === 0) {
-					return res.status(404).json({ error: 'Usuario no encontrado' });
+					return res.status(404).json({ Error: 'Usuario no encontrado' });
 				}
 
 				// Envía una respuesta exitosa
-				return response.status(200).json({ message: 'Usuario actualizado correctamente'});
+				return response.status(200).json({ Status: "Success", message: 'Usuario actualizado correctamente'});
 			}
 		);
 
 	} catch (err) {
-		console.error(err);
-		return response.status(500).json({ error: 'Error al actualizar el usuario' });
+		return response.status(500).json({ Error: 'Error al actualizar el usuario' });
 	}
 });
 
-router.delete('/:userId', (request, response) => {
+router.delete('/', (request, response) => {
 	try {
-		const userId = request.params.userId;
+		const { id } = request.body;
 
-		connection.query('DELETE FROM login WHERE id = ?', [userId], (err, results) => {
-			if (err) {
-				console.error(err);
-				return response.status(500).json({ message: 'Error al eliminar el usuario' });
+		const query = `DELETE FROM login WHERE id = ?`;
+
+		connection.query(query, id, (err, results) => {
+			if(err) {
+				return response.status(500).json({ Error: err.message })
 			}
 
-			if (results.affectedRows === 0) {
-				return response.status(404).json({ message: 'Usuario no encontrado' });
-			}
-
-			// Envía una respuesta exitosa
-			return response.status(200).json({ message: 'Usuario eliminado correctamente' });
+			return response.json({ Status: "Success", message: "Usuario eliminado correctamente" });
 		});
 	} catch (err) {
-		console.error(err);
-		return response.status(500).json({ message: 'Error al eliminar el usuario' });
+		return response.status(500).json({Error: err.message});
 	}
 });
 

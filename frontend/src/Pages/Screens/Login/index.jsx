@@ -2,51 +2,48 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Title } from "../../components/Title";
-import "./styles.css";
 import { AppContext } from "../../../Context";
-import { MessageCard } from "../../components/MessageCard";
+import { InputCard } from "../../components/InputsCards";
+import { handleInputChange } from "../../../utils/handleInputChange";
+import { handleNotifications } from "../../../utils/handleNotifications";
+import { ButtonCard } from "../../components/ButtonCard";
+import { SubTitle } from "../../components/SubTitle";
+import { handlePostData } from "../../../utils/handleData/handlePostData";
+import { WrapperContainer2 } from "../../components/WrapperContainers";
+
+import "./styles.css";
+import { ScrollToWrapper } from "../../components/ScrollToWrapper";
 
 const Login = () => {
     const context = React.useContext(AppContext);
 
-    const [email, setEmail] = React.useState("");
-    const [password, setPassword] = React.useState("");
+	const [values, setValues] = React.useState({
+		email: null,
+		password: null,
+	})
 
     const navigate = useNavigate();
 
     const handleLogin = async (event) => {
-        event.preventDefault();
-		context.setLoading(true);
         try {
-            const response = await fetch( `${context.apiUri}/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email,
-                    password
-                }),
-            });
-            const data = await response.json();
+			event.preventDefault();
+			context.setLoading(true);
 
-            if(response.status === 200) {
-				context.messageHandler("all-ok", data.message)
-				handleUserRol(data.type);
+			const data = await handlePostData(event, values, "/login", null);
+			console.log(data)
+
+			if (data?.type != (undefined || null)) {
+				handleUserRol(data?.type);
 
 				navigate("/home");
 				context.setIsLoged(true);
-				context.setLoading(false);
-
-            } else {
-				context.messageHandler("error", data.message)
-				context.setLoading(false);
 			}
         }
         catch (err) {
-			context.errorMessageHandler("error", err.message)
+			handleNotifications("error", err.message);
+        } finally {
 			context.setLoading(false);
-        }
+		}
     };
 
 	const handleUserRol = async (type) => {
@@ -56,58 +53,49 @@ const Login = () => {
 			context.setAdmin(false);
 		} else {
 			context.setAdmin(false);
-			context.errorMessageHandler("error", "Usuario invalido")
+			context.setIsLoged(false)
+			handleNotifications("error", "Usuario Invalido");
 		}
 	}
 
     return(
-		<>
-			<Title
-				color="#FFF"
-				borderColor="#FFF"
-			>
-				Bienvenido a  la Bodega de Archivos del SPE
-			</Title>
-			<div className="login-container">
+		<ScrollToWrapper>
+
+			<WrapperContainer2 padding={0}>
 				<Title
 					color="#FFF"
 					borderColor="#FFF"
 				>
-					Iniciar Sesión
+					Bienvenido a  la Bodega de Archivos del SPE
 				</Title>
 
-				<form className="login-form-container" onSubmit={handleLogin}>
-					<MessageCard/>
-					<div className="form-input-container">
-						<label htmlFor="login-email">Correo:</label>
-						<input
-							type="email"
-							name="login-email"
-							placeholder="Correo"
-							value={email}
-							onChange={(event) => {
-								setEmail(event.target.value)
-							}}
-						/>
-					</div>
-					<div className="form-input-container">
-						<label htmlFor="login-password">Contraseña:</label>
-						<input
-							type="password"
-							name="login-password"
-							placeholder="Contraseña"
-							value={password}
-							onChange={(event) => {
-								setPassword(event.target.value)
-							}}
-						/>
-					</div>
-					<button type="submit">Iniciar sesion</button>
+				<form onSubmit={handleLogin} className="login-container shadow-style">
+					<SubTitle>Iniciar Sesión</SubTitle>
+
+					<InputCard
+						type="email"
+						id={"email"}
+						label={"Correo:"}
+						placeholder="Ingrese su correo"
+						onChange={(event) => handleInputChange("email", event, setValues)}
+						defaultValue={values?.email}
+					/>
+					<InputCard
+						type="password"
+						id={"password"}
+						label={"Contraseña:"}
+						placeholder="Ingrese su contraseña"
+						onChange={(event) => handleInputChange("password", event, setValues)}
+						defaultValue={values?.password}
+					/>
+
+					<ButtonCard type="submit" title="Iniciar Sesión">
+						Iniciar sesion
+					</ButtonCard>
+
 				</form>
-			</div>
-		</>
-
-
+			</WrapperContainer2>
+		</ScrollToWrapper>
     );
 }
 
